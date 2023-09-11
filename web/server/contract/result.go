@@ -1,8 +1,8 @@
 package contract
 
 import (
-	"github.com/smartystreets/goconvey/convey/reporting"
-	"github.com/smartystreets/goconvey/web/server/messaging"
+	"github.com/gozelle/convey/convey/reporting"
+	"github.com/gozelle/convey/web/server/messaging"
 )
 
 type Package struct {
@@ -15,7 +15,7 @@ type Package struct {
 	Error         error
 	Output        string
 	Result        *PackageResult
-
+	
 	HasImportCycle bool
 }
 
@@ -56,7 +56,7 @@ var ( // PackageResult.Outcome values:
 	NoTestFiles     = "no test files"
 	NoTestFunctions = "no test functions"
 	NoGoFiles       = "no go code"
-
+	
 	TestRunAbortedUnexpectedly = "test run aborted unexpectedly"
 )
 
@@ -87,7 +87,7 @@ type TestResult struct {
 	Message  string
 	Error    string
 	Stories  []reporting.ScopeResult
-
+	
 	RawLines []string `json:",omitempty"`
 }
 

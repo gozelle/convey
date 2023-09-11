@@ -6,8 +6,8 @@ import (
 	"log"
 	"strings"
 	"sync"
-
-	"github.com/smartystreets/goconvey/web/server/contract"
+	
+	"github.com/gozelle/convey/web/server/contract"
 )
 
 type concurrentCoordinator struct {
@@ -37,7 +37,7 @@ func (self *concurrentCoordinator) worker(id int) {
 			log.Printf("Skipping concurrent execution: %s\n", packageName)
 			continue
 		}
-
+		
 		if folder.HasImportCycle {
 			message := fmt.Sprintf("can't load package: import cycle not allowed\npackage %s\n\timports %s", packageName, packageName)
 			log.Println(message)

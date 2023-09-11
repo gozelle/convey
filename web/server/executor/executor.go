@@ -3,8 +3,8 @@ package executor
 import (
 	"log"
 	"time"
-
-	"github.com/smartystreets/goconvey/web/server/contract"
+	
+	"github.com/gozelle/convey/web/server/contract"
 )
 
 const (
@@ -65,7 +65,7 @@ Loop:
 			break Loop
 		}
 	}
-
+	
 	log.Printf("Executor status: '%s'\n", self.status)
 }
 

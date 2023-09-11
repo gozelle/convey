@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/smartystreets/goconvey/web/server/contract"
+	
+	"github.com/gozelle/convey/web/server/contract"
 )
 
 var (
@@ -23,7 +23,7 @@ type outputParser struct {
 	lines  []string
 	result *contract.PackageResult
 	tests  []*contract.TestResult
-
+	
 	// place holders for loops
 	line    string
 	test    *contract.TestResult
@@ -65,16 +65,16 @@ func (self *outputParser) separateTestFunctionsAndMetadata() {
 func (self *outputParser) processNonTestOutput() bool {
 	if noGoFiles(self.line) {
 		self.recordFinalOutcome(contract.NoGoFiles)
-
+		
 	} else if buildFailed(self.line) {
 		self.recordFinalOutcome(contract.BuildFailure)
-
+		
 	} else if noTestFiles(self.line) {
 		self.recordFinalOutcome(contract.NoTestFiles)
-
+		
 	} else if noTestFunctions(self.line) {
 		self.recordFinalOutcome(contract.NoTestFunctions)
-
+		
 	} else {
 		return false
 	}
@@ -90,16 +90,16 @@ func (self *outputParser) processTestOutput() {
 	self.line = strings.TrimSpace(self.line)
 	if isNewTest(self.line) {
 		self.registerTestFunction()
-
+		
 	} else if isTestResult(self.line) {
 		self.recordTestMetadata()
-
+		
 	} else if isPackageReport(self.line) {
 		self.recordPackageMetadata()
-
+		
 	} else {
 		self.saveLineForParsingLater()
-
+		
 	}
 }
 
@@ -124,10 +124,10 @@ func (self *outputParser) recordTestMetadata() {
 func (self *outputParser) recordPackageMetadata() {
 	if packageFailed(self.line) {
 		self.recordTestingOutcome(contract.Failed)
-
+		
 	} else if packagePassed(self.line) {
 		self.recordTestingOutcome(contract.Passed)
-
+		
 	} else if isCoverageSummary(self.line) {
 		self.recordCoverageSummary(self.line)
 	}

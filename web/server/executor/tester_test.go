@@ -7,9 +7,9 @@ import (
 	"log"
 	"testing"
 	"time"
-
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/smartystreets/goconvey/web/server/contract"
+	
+	. "github.com/gozelle/convey/convey"
+	"github.com/gozelle/convey/web/server/contract"
 )
 
 func init() {
@@ -18,48 +18,48 @@ func init() {
 
 func TestConcurrentTester(t *testing.T) {
 	t.Skip("BROKEN!")
-
+	
 	Convey("Subject: Controlled execution of test packages", t, func() {
 		fixture := NewTesterFixture()
-
+		
 		Convey("Whenever tests for each package are executed", func() {
 			fixture.InBatchesOf(1).RunTests()
-
+			
 			Convey("The tester should execute the tests in each active package with the correct arguments",
 				fixture.ShouldHaveRecordOfExecutionCommands)
-
+			
 			Convey("There should be a test output result for each active package",
 				fixture.ShouldHaveOneOutputPerInput)
-
+			
 			Convey("The output should be as expected",
 				fixture.OutputShouldBeAsExpected)
 		})
-
+		
 		Convey("When the tests for each package are executed synchronously", func() {
 			fixture.InBatchesOf(1).RunTests()
-
+			
 			Convey("Each active package should be run synchronously and in the given order",
 				fixture.TestsShouldHaveRunContiguously)
 		})
-
+		
 		Convey("When the tests for each package are executed synchronously with failures", func() {
 			fixture.InBatchesOf(1).SetupFailedTestSuites().RunTests()
-
+			
 			Convey("The failed test packages should not result in any panics", func() {
 				So(fixture.recovered, ShouldBeNil)
 			})
 		})
-
+		
 		Convey("When packages are tested concurrently", func() {
 			fixture.InBatchesOf(concurrentBatchSize).RunTests()
-
+			
 			Convey("Active packages should be arranged and tested in batches of the appropriate size",
 				fixture.TestsShouldHaveRunInBatchesOfTwo)
 		})
-
+		
 		Convey("When packages are tested concurrently with failures", func() {
 			fixture.InBatchesOf(concurrentBatchSize).SetupFailedTestSuites().RunTests()
-
+			
 			Convey("The failed test packages should not result in any panics", func() {
 				So(fixture.recovered, ShouldBeNil)
 			})
@@ -116,7 +116,7 @@ func (self *TesterFixture) RunTests() {
 			self.recovered = r.(error)
 		}
 	}()
-
+	
 	self.tester.TestAll(self.packages)
 	for _, p := range self.packages {
 		self.results = append(self.results, p.Output)
@@ -159,9 +159,9 @@ func (self *TesterFixture) OutputShouldBeAsExpected() {
 
 func (self *TesterFixture) TestsShouldHaveRunContiguously() {
 	self.OutputShouldBeAsExpected()
-
+	
 	So(self.shell.MaxConcurrentCommands(), ShouldEqual, 1)
-
+	
 	for i := 0; i < len(self.executions)-1; i++ {
 		current := self.executions[i]
 		next := self.executions[i+1]
@@ -172,7 +172,7 @@ func (self *TesterFixture) TestsShouldHaveRunContiguously() {
 
 func (self *TesterFixture) TestsShouldHaveRunInBatchesOfTwo() {
 	self.OutputShouldBeAsExpected()
-
+	
 	So(self.shell.MaxConcurrentCommands(), ShouldEqual, concurrentBatchSize)
 }
 
@@ -196,7 +196,7 @@ func (self *TimedShell) Executions() []*ShellCommand {
 
 func (self *TimedShell) MaxConcurrentCommands() int {
 	var concurrent int
-
+	
 	for x, current := range self.executions {
 		concurrentWith_x := 1
 		for y, comparison := range self.executions {
@@ -230,7 +230,7 @@ func (self *TimedShell) GoTest(directory, packageName string, arguments, tags []
 	if self.panicMessage != "" {
 		return "", errors.New(self.panicMessage)
 	}
-
+	
 	output = directory
 	err = self.err
 	self.executions = append(self.executions, self.composeCommand(directory))

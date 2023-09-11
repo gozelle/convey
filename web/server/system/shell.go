@@ -34,12 +34,12 @@ func (self *Shell) GoTest(directory, packageName string, tags, arguments []strin
 	reportData := reportPath + ".txt"
 	reportHTML := reportPath + ".html"
 	tagsArg := "-tags=" + strings.Join(tags, ",")
-
+	
 	goconvey := findGoConvey(directory, self.gobin, packageName, tagsArg).Execute()
 	withCoverage := runWithCoverage(goconvey, self.coverage, reportData, directory, self.gobin, self.defaultTimeout, tagsArg, arguments).Execute()
 	final := runWithoutCoverage(withCoverage, goconvey, directory, self.gobin, self.defaultTimeout, tagsArg, arguments).Execute()
 	go generateReports(final, self.coverage, directory, self.gobin, reportData, reportHTML).Execute()
-
+	
 	return final.Output, final.Error
 }
 
@@ -55,24 +55,24 @@ func runWithCoverage(goconvey Command, coverage bool, reportPath, directory, gob
 	if !coverage || goconvey.Error != nil {
 		return Command{}
 	}
-
+	
 	arguments := []string{"test", "-v", "-coverprofile=" + reportPath, tagsArg}
-
+	
 	customArgsText := strings.Join(customArguments, "\t")
 	if !strings.Contains(customArgsText, "-covermode=") {
 		arguments = append(arguments, "-covermode=set")
 	}
-
+	
 	if !strings.Contains(customArgsText, "-timeout=") {
 		arguments = append(arguments, "-timeout="+defaultTimeout)
 	}
-
+	
 	if strings.Contains(goconvey.Output, goconveyDSLImport) {
 		arguments = append(arguments, "-convey-json")
 	}
-
+	
 	arguments = append(arguments, customArguments...)
-
+	
 	return NewCommand(directory, gobin, arguments...)
 }
 
@@ -81,21 +81,21 @@ func runWithoutCoverage(withCoverage, goconvey Command, directory, gobin, defaul
 		log.Println(gopathProblem, goconvey.Output, goconvey.Error)
 		return goconvey
 	}
-
+	
 	if coverageStatementRE.MatchString(withCoverage.Output) {
 		return withCoverage
 	}
-
+	
 	log.Printf("Coverage output: %v", withCoverage.Output)
-
+	
 	log.Print("Run without coverage")
-
+	
 	arguments := []string{"test", "-v", tagsArg}
 	customArgsText := strings.Join(customArguments, "\t")
 	if !strings.Contains(customArgsText, "-timeout=") {
 		arguments = append(arguments, "-timeout="+defaultTimeout)
 	}
-
+	
 	if strings.Contains(goconvey.Output, goconveyDSLImport) {
 		arguments = append(arguments, "-convey-json")
 	}
@@ -107,11 +107,11 @@ func generateReports(previous Command, coverage bool, directory, gobin, reportDa
 	if previous.Error != nil {
 		return previous
 	}
-
+	
 	if !coverage {
 		return previous
 	}
-
+	
 	return NewCommand(directory, gobin, "tool", "cover", "-html="+reportData, "-o", reportHTML)
 }
 
@@ -123,7 +123,7 @@ type Command struct {
 	directory  string
 	executable string
 	arguments  []string
-
+	
 	Output string
 	Error  error
 }
@@ -140,11 +140,11 @@ func (this Command) Execute() Command {
 	if len(this.executable) == 0 {
 		return this
 	}
-
+	
 	if len(this.Output) > 0 || this.Error != nil {
 		return this
 	}
-
+	
 	command := exec.Command(this.executable, this.arguments...)
 	command.Dir = this.directory
 	var rawOutput []byte
@@ -155,7 +155,7 @@ func (this Command) Execute() Command {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const goconveyDSLImport = "github.com/smartystreets/goconvey/convey " // note the trailing space: we don't want to target packages nested in the /convey package.
+const goconveyDSLImport = "github.com/gozelle/convey/convey " // note the trailing space: we don't want to target packages nested in the /convey package.
 const gopathProblem = "Please run goconvey from within $GOPATH/src (also, symlinks might be problematic). Output and Error: "
 
 var coverageStatementRE = regexp.MustCompile(`(?m)coverage: \d+\.\d% of statements(.*)$|^panic: test timed out after `)

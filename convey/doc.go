@@ -3,7 +3,7 @@
 // packages from this project as they serve internal purposes.
 package convey
 
-import "github.com/smartystreets/goconvey/convey/reporting"
+import "github.com/gozelle/convey/convey/reporting"
 
 ////////////////////////////////// suite //////////////////////////////////
 
@@ -22,13 +22,13 @@ type C interface {
 	Convey(items ...any)
 	SkipConvey(items ...any)
 	FocusConvey(items ...any)
-
+	
 	So(actual any, assert Assertion, expected ...any)
 	SoMsg(msg string, actual any, assert Assertion, expected ...any)
 	SkipSo(stuff ...any)
-
+	
 	Reset(action func())
-
+	
 	Println(items ...any) (int, error)
 	Print(items ...any) (int, error)
 	Printf(format string, items ...any) (int, error)
@@ -146,30 +146,30 @@ type FailureMode string
 type StackMode string
 
 const (
-
+	
 	// FailureContinues is a failure mode which prevents failing
 	// So()-assertions from halting Convey-block execution, instead
 	// allowing the test to continue past failing So()-assertions.
 	FailureContinues FailureMode = "continue"
-
+	
 	// FailureHalts is the default setting for a top-level Convey()-block
 	// and will cause all failing So()-assertions to halt further execution
 	// in that test-arm and continue on to the next arm.
 	FailureHalts FailureMode = "halt"
-
+	
 	// FailureInherits is the default setting for failure-mode, it will
 	// default to the failure-mode of the parent block. You should never
 	// need to specify this mode in your tests..
 	FailureInherits FailureMode = "inherits"
-
+	
 	// StackError is a stack mode which tells Convey to print stack traces
 	// only for errors and not for test failures
 	StackError StackMode = "error"
-
+	
 	// StackFail is a stack mode which tells Convey to print stack traces
 	// for both errors and test failures
 	StackFail StackMode = "fail"
-
+	
 	// StackInherits is the default setting for stack-mode, it will
 	// default to the stack-mode of the parent block. You should never
 	// need to specify this mode in your tests..

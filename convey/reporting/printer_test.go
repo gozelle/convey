@@ -68,7 +68,7 @@ func TestPrintlnFormat(t *testing.T) {
 func TestPrintlnPreservesEncodedStrings(t *testing.T) {
 	file := newMemoryFile()
 	printer := NewPrinter(file)
-	const expected = "= -> %%3D"
+	const expected = "= -> %3D"
 	printer.Println(expected)
 
 	if file.buffer != expected+"\n" {

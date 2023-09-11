@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/smartystreets/goconvey/convey/reporting"
-	"github.com/smartystreets/goconvey/web/server/contract"
+	
+	"github.com/gozelle/convey/convey/reporting"
+	"github.com/gozelle/convey/web/server/contract"
 )
 
 type testParser struct {
@@ -51,20 +51,20 @@ func (self *testParser) processLine() bool {
 	if strings.HasSuffix(self.line, reporting.OpenJson) {
 		self.inJson = true
 		self.accountForOutputWithoutNewline()
-
+		
 	} else if self.line == reporting.CloseJson {
 		self.inJson = false
-
+		
 	} else if self.inJson {
 		self.jsonLines = append(self.jsonLines, self.line)
-
+		
 	} else if isPanic(self.line) {
 		self.parsePanicOutput()
 		return false
-
+		
 	} else if isGoTestLogOutput(self.line) {
 		self.parseLogLocation()
-
+		
 	} else {
 		self.otherLines = append(self.otherLines, self.line)
 	}
@@ -164,7 +164,7 @@ func panicLineShouldBeIndented(index int, line string) bool {
 const bugReportRequest = `
 Uh-oh! Looks like something went wrong. Please copy the following text and file a bug report at: 
 
-https://github.com/smartystreets/goconvey/issues?state=open
+https://github.com/gozelle/convey/issues?state=open
 
 ======= BEGIN BUG REPORT =======
 

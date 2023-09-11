@@ -1,4 +1,4 @@
-module github.com/smartystreets/goconvey
+module github.com/gozelle/convey
 
 go 1.18
 

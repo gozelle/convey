@@ -2,8 +2,8 @@ package parser
 
 import (
 	"log"
-
-	"github.com/smartystreets/goconvey/web/server/contract"
+	
+	"github.com/gozelle/convey/web/server/contract"
 )
 
 type Parser struct {

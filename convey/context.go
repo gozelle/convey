@@ -2,9 +2,9 @@ package convey
 
 import (
 	"fmt"
-
+	
+	"github.com/gozelle/convey/convey/reporting"
 	"github.com/jtolds/gls"
-	"github.com/smartystreets/goconvey/convey/reporting"
 )
 
 type conveyErr struct {
@@ -32,7 +32,7 @@ const (
 
 const (
 	failureHalt = "___FAILURE_HALT___"
-
+	
 	nodeKey = "node"
 )
 
@@ -68,15 +68,15 @@ func mustGetCurrentContext() *context {
 // This implements the `C` interface.
 type context struct {
 	reporter reporting.Reporter
-
+	
 	children map[string]*context
-
+	
 	resets []func()
-
+	
 	executedOnce   bool
 	expectChildRun *bool
 	complete       bool
-
+	
 	focus       bool
 	failureMode FailureMode
 	stackMode   StackMode
@@ -87,19 +87,19 @@ type context struct {
 // or this panics.
 func rootConvey(items ...any) {
 	entry := discover(items)
-
+	
 	if entry.Test == nil {
 		conveyPanic(missingGoTest)
 	}
-
+	
 	expectChildRun := true
 	ctx := &context{
 		reporter: buildReporter(),
-
+		
 		children: make(map[string]*context),
-
+		
 		expectChildRun: &expectChildRun,
-
+		
 		focus:       entry.Focus,
 		failureMode: defaultFailureMode.combine(entry.FailMode),
 		stackMode:   defaultStackMode.combine(entry.StackMode),
@@ -107,7 +107,7 @@ func rootConvey(items ...any) {
 	ctxMgr.SetValues(gls.Values{nodeKey: ctx}, func() {
 		ctx.reporter.BeginStory(reporting.NewStoryReport(entry.Test))
 		defer ctx.reporter.EndStory()
-
+		
 		for ctx.shouldVisit() {
 			ctx.conveyInner(entry.Situation, entry.Func)
 			expectChildRun = true
@@ -127,7 +127,7 @@ func (ctx *context) FocusConvey(items ...any) {
 
 func (ctx *context) Convey(items ...any) {
 	entry := discover(items)
-
+	
 	// we're a branch, or leaf (on the wind)
 	if entry.Test != nil {
 		conveyPanic(extraGoTest)
@@ -135,7 +135,7 @@ func (ctx *context) Convey(items ...any) {
 	if ctx.focus && !entry.Focus {
 		return
 	}
-
+	
 	var inner_ctx *context
 	if ctx.executedOnce {
 		var ok bool
@@ -149,18 +149,18 @@ func (ctx *context) Convey(items ...any) {
 		}
 		inner_ctx = &context{
 			reporter: ctx.reporter,
-
+			
 			children: make(map[string]*context),
-
+			
 			expectChildRun: ctx.expectChildRun,
-
+			
 			focus:       entry.Focus,
 			failureMode: ctx.failureMode.combine(entry.FailMode),
 			stackMode:   ctx.stackMode.combine(entry.StackMode),
 		}
 		ctx.children[entry.Situation] = inner_ctx
 	}
-
+	
 	if inner_ctx.shouldVisit() {
 		ctxMgr.SetValues(gls.Values{nodeKey: inner_ctx}, func() {
 			inner_ctx.conveyInner(entry.Situation, entry.Func)
@@ -231,16 +231,16 @@ func (ctx *context) conveyInner(situation string, f func(C)) {
 	// Record/Reset state for next time.
 	defer func() {
 		ctx.executedOnce = true
-
+		
 		// This is only needed at the leaves, but there's no harm in also setting it
 		// when returning from branch Convey's
 		*ctx.expectChildRun = false
 	}()
-
+	
 	// Set up+tear down our scope for the reporter
 	ctx.reporter.Enter(reporting.NewScopeReport(situation))
 	defer ctx.reporter.Exit()
-
+	
 	// Recover from any panics in f, and assign the `complete` status for this
 	// node of the tree.
 	defer func() {
@@ -261,7 +261,7 @@ func (ctx *context) conveyInner(situation string, f func(C)) {
 			}
 		}
 	}()
-
+	
 	// Resets are registered as the `f` function executes, so nil them here.
 	// All resets are run in registration order (FIFO).
 	ctx.resets = []func(){}
@@ -271,7 +271,7 @@ func (ctx *context) conveyInner(situation string, f func(C)) {
 			r()
 		}
 	}()
-
+	
 	if f == nil {
 		// if f is nil, this was either a Convey(..., nil), or a SkipConvey
 		ctx.reporter.Report(reporting.NewSkipReport())

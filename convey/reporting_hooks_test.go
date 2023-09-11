@@ -9,127 +9,127 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
-	"github.com/smartystreets/goconvey/convey/reporting"
+	
+	"github.com/gozelle/convey/convey/reporting"
 )
 
 func TestSingleScopeReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		So(1, ShouldEqual, 1)
 	})
-
+	
 	expectEqual(t, "Begin|A|Success|Exit|End", myReporter.wholeStory())
 }
 
 func TestNestedScopeReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		Convey("B", func() {
 			So(1, ShouldEqual, 1)
 		})
 	})
-
+	
 	expectEqual(t, "Begin|A|B|Success|Exit|Exit|End", myReporter.wholeStory())
 }
 
 func TestFailureReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		So(1, ShouldBeNil)
 	})
-
+	
 	expectEqual(t, "Begin|A|Failure|Exit|End", myReporter.wholeStory())
 }
 
 func TestFirstFailureEndsScopeExecution(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		So(1, ShouldBeNil)
 		So(nil, ShouldBeNil)
 	})
-
+	
 	expectEqual(t, "Begin|A|Failure|Exit|End", myReporter.wholeStory())
 }
 
 func TestComparisonFailureDeserializedAndReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		So("hi", ShouldEqual, "bye")
 	})
-
+	
 	expectEqual(t, `Begin|A|Failure("bye"/"hi")|Exit|End`, myReporter.wholeStory())
 }
 
 func TestNestedFailureReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		Convey("B", func() {
 			So(2, ShouldBeNil)
 		})
 	})
-
+	
 	expectEqual(t, "Begin|A|B|Failure|Exit|Exit|End", myReporter.wholeStory())
 }
 
 func TestSuccessAndFailureReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		So(nil, ShouldBeNil)
 		So(1, ShouldBeNil)
 	})
-
+	
 	expectEqual(t, "Begin|A|Success|Failure|Exit|End", myReporter.wholeStory())
 }
 
 func TestIncompleteActionReportedAsSkipped(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		Convey("B", nil)
 	})
-
+	
 	expectEqual(t, "Begin|A|B|Skipped|Exit|Exit|End", myReporter.wholeStory())
 }
 
 func TestSkippedConveyReportedAsSkipped(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		SkipConvey("B", func() {
 			So(1, ShouldEqual, 1)
 		})
 	})
-
+	
 	expectEqual(t, "Begin|A|B|Skipped|Exit|Exit|End", myReporter.wholeStory())
 }
 
 func TestMultipleSkipsAreReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		Convey("0", func() {
 			So(nil, ShouldBeNil)
 		})
-
+		
 		SkipConvey("1", func() {})
 		SkipConvey("2", func() {})
-
+		
 		Convey("3", nil)
 		Convey("4", nil)
-
+		
 		Convey("5", func() {
 			So(nil, ShouldBeNil)
 		})
 	})
-
+	
 	expected := "Begin" +
 		"|A|0|Success|Exit|Exit" +
 		"|A|1|Skipped|Exit|Exit" +
@@ -138,45 +138,45 @@ func TestMultipleSkipsAreReported(t *testing.T) {
 		"|A|4|Skipped|Exit|Exit" +
 		"|A|5|Success|Exit|Exit" +
 		"|End"
-
+	
 	expectEqual(t, expected, myReporter.wholeStory())
 }
 
 func TestSkippedAssertionIsNotReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		SkipSo(1, ShouldEqual, 1)
 	})
-
+	
 	expectEqual(t, "Begin|A|Skipped|Exit|End", myReporter.wholeStory())
 }
 
 func TestMultipleSkippedAssertionsAreNotReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		SkipSo(1, ShouldEqual, 1)
 		So(1, ShouldEqual, 1)
 		SkipSo(1, ShouldEqual, 1)
 	})
-
+	
 	expectEqual(t, "Begin|A|Skipped|Success|Skipped|Exit|End", myReporter.wholeStory())
 }
 
 func TestErrorByManualPanicReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		panic("Gopher alert!")
 	})
-
+	
 	expectEqual(t, "Begin|A|Error|Exit|End", myReporter.wholeStory())
 }
 
 func TestIterativeConveysReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		for x := 0; x < 3; x++ {
 			Convey(strconv.Itoa(x), func() {
@@ -184,13 +184,13 @@ func TestIterativeConveysReported(t *testing.T) {
 			})
 		}
 	})
-
+	
 	expectEqual(t, "Begin|A|0|Success|Exit|Exit|A|1|Success|Exit|Exit|A|2|Success|Exit|Exit|End", myReporter.wholeStory())
 }
 
 func TestNestedIterativeConveysReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func() {
 		for x := 0; x < 3; x++ {
 			Convey(strconv.Itoa(x), func() {
@@ -202,7 +202,7 @@ func TestNestedIterativeConveysReported(t *testing.T) {
 			})
 		}
 	})
-
+	
 	expectEqual(t, ("Begin|" +
 		"A|0|< 0|Failure|Exit|Exit|Exit|" +
 		"A|0|< 1|Success|Exit|Exit|Exit|" +
@@ -218,20 +218,20 @@ func TestNestedIterativeConveysReported(t *testing.T) {
 
 func TestEmbeddedAssertionReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	Convey("A", test, func(c C) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c.So(r.FormValue("msg"), ShouldEqual, "ping")
 		}))
 		http.DefaultClient.Get(ts.URL + "?msg=ping")
 	})
-
+	
 	expectEqual(t, "Begin|A|Success|Exit|End", myReporter.wholeStory())
 }
 
 func TestEmbeddedContextHelperReported(t *testing.T) {
 	myReporter, test := setupFakeReporter()
-
+	
 	helper := func(c C) http.HandlerFunc {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c.Convey("Embedded", func() {
@@ -239,12 +239,12 @@ func TestEmbeddedContextHelperReported(t *testing.T) {
 			})
 		})
 	}
-
+	
 	Convey("A", test, func(c C) {
 		ts := httptest.NewServer(helper(c))
 		http.DefaultClient.Get(ts.URL + "?msg=ping")
 	})
-
+	
 	expectEqual(t, "Begin|A|Embedded|Success|Exit|Exit|End", myReporter.wholeStory())
 }
 

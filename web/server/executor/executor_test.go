@@ -4,41 +4,41 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/smartystreets/goconvey/web/server/contract"
+	
+	. "github.com/gozelle/convey/convey"
+	"github.com/gozelle/convey/web/server/contract"
 )
 
 func TestExecutor(t *testing.T) {
 	t.Skip("BROKEN!")
-
+	
 	Convey("Subject: Execution of test packages and aggregation of parsed results", t, func() {
 		fixture := newExecutorFixture()
-
+		
 		Convey("When tests packages are executed", func() {
 			fixture.ExecuteTests()
-
+			
 			Convey("The result should include parsed results for each test package.",
 				fixture.ResultShouldBePopulated)
 		})
-
+		
 		Convey("When the executor is idle", func() {
 			Convey("The status of the executor should be 'idle'", func() {
 				So(fixture.executor.Status(), ShouldEqual, Idle)
 			})
 		})
-
+		
 		Convey("When the status is updated", func() {
 			fixture.executor.setStatus(Executing)
-
+			
 			Convey("The status flag should be set to true", func() {
 				So(fixture.executor.statusFlag, ShouldBeTrue)
 			})
 		})
-
+		
 		Convey("During test execution", func() {
 			status := fixture.CaptureStatusDuringExecutionPhase()
-
+			
 			Convey("The status of the executor should be 'executing'", func() {
 				So(status, ShouldEqual, Executing)
 			})
@@ -78,8 +78,8 @@ func (self *ExecutorFixture) ResultShouldBePopulated() {
 
 var (
 	prefix   = "/Users/blah/gopath/src/"
-	packageA = "github.com/smartystreets/goconvey/a"
-	packageB = "github.com/smartystreets/goconvey/b"
+	packageA = "github.com/gozelle/convey/a"
+	packageB = "github.com/gozelle/convey/b"
 	resultA  = &contract.PackageResult{PackageName: packageA}
 	resultB  = &contract.PackageResult{PackageName: packageB}
 )
@@ -95,7 +95,7 @@ func newExecutorFixture() *ExecutorFixture {
 	}
 	self.stamp = time.Now()
 	now = func() time.Time { return self.stamp }
-
+	
 	self.expected = &contract.CompleteOutput{
 		Packages: []*contract.PackageResult{
 			resultA,

@@ -23,16 +23,16 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
+	
 	"golang.org/x/tools/go/packages"
-
-	"github.com/smartystreets/goconvey/web/server/api"
-	"github.com/smartystreets/goconvey/web/server/contract"
-	"github.com/smartystreets/goconvey/web/server/executor"
-	"github.com/smartystreets/goconvey/web/server/messaging"
-	"github.com/smartystreets/goconvey/web/server/parser"
-	"github.com/smartystreets/goconvey/web/server/system"
-	"github.com/smartystreets/goconvey/web/server/watch"
+	
+	"github.com/gozelle/convey/web/server/api"
+	"github.com/gozelle/convey/web/server/contract"
+	"github.com/gozelle/convey/web/server/executor"
+	"github.com/gozelle/convey/web/server/messaging"
+	"github.com/gozelle/convey/web/server/parser"
+	"github.com/gozelle/convey/web/server/system"
+	"github.com/gozelle/convey/web/server/watch"
 )
 
 func init() {
@@ -49,16 +49,16 @@ func init() {
 	flag.StringVar(&workDir, "workDir", "", "set goconvey working directory (default current directory).")
 	flag.BoolVar(&autoLaunchBrowser, "launchBrowser", true, "toggle auto launching of browser.")
 	flag.BoolVar(&leakTemp, "leakTemp", false, "leak temp dir with coverage reports.")
-
+	
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
 func main() {
 	flag.Parse()
-
+	
 	printHeader()
-
+	
 	tmpDir, err := ioutil.TempDir("", "*.goconvey")
 	if err != nil {
 		log.Fatal(err)
@@ -76,22 +76,22 @@ func main() {
 			}
 		}()
 	}
-
+	
 	done := make(chan os.Signal)
 	signal.Notify(done, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
-
+	
 	working := getWorkDir()
 	shell := system.NewShell(gobin, reports, cover, timeout)
-
+	
 	watcherInput := make(chan messaging.WatcherCommand)
 	watcherOutput := make(chan messaging.Folders)
 	excludedDirItems := strings.Split(excludedDirs, `,`)
 	watcher := watch.NewWatcher(working, depth, nap, watcherInput, watcherOutput, watchedSuffixes, excludedDirItems)
-
+	
 	parser := parser.NewParser(parser.ParsePackageResults)
 	tester := executor.NewConcurrentTester(shell)
 	tester.SetBatchSize(parallelPackages)
-
+	
 	longpollChan := make(chan chan string)
 	executor := executor.NewExecutor(tester, parser, longpollChan)
 	server := api.NewHTTPServer(working, watcherInput, executor, longpollChan)
@@ -102,7 +102,7 @@ func main() {
 		go launchBrowser(listener.Addr().String())
 	}
 	srv := serveHTTP(reports, server, listener)
-
+	
 	<-done
 	log.Println("shutting down")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -142,11 +142,11 @@ func launchBrowser(addr string) {
 		log.Printf("Skipped launching browser for this OS: %s", runtime.GOOS)
 		return
 	}
-
+	
 	log.Printf("Launching browser on %s", addr)
 	url := fmt.Sprintf("http://%s", addr)
 	cmd := exec.Command(browser, url)
-
+	
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Println(err)
@@ -192,13 +192,13 @@ func isInsideTestdata(folder *messaging.Folder) bool {
 		// well
 		return false
 	}
-
+	
 	for _, directory := range strings.Split(filepath.ToSlash(relativePath), "/") {
 		if directory == "testdata" {
 			return true
 		}
 	}
-
+	
 	return false
 }
 
@@ -228,7 +228,7 @@ func serveHTTP(reports string, server contract.Server, listener net.Listener) *h
 		log.Fatal(err)
 	}
 	http.Handle("/", http.FileServer(http.FS(webclient)))
-
+	
 	http.HandleFunc("/watch", server.Watch)
 	http.HandleFunc("/ignore", server.Ignore)
 	http.HandleFunc("/reinstate", server.Reinstate)
@@ -237,9 +237,9 @@ func serveHTTP(reports string, server contract.Server, listener net.Listener) *h
 	http.HandleFunc("/status", server.Status)
 	http.HandleFunc("/status/poll", server.LongPollStatus)
 	http.HandleFunc("/pause", server.TogglePause)
-
+	
 	http.Handle("/reports/", http.StripPrefix("/reports/", http.FileServer(http.Dir(reports))))
-
+	
 	log.Printf("Serving HTTP at: http://%s\n", listener.Addr())
 	ret := &http.Server{}
 	go func() {
@@ -296,7 +296,7 @@ var (
 	excludedDirs      string
 	autoLaunchBrowser bool
 	leakTemp          bool
-
+	
 	quarterSecond = time.Millisecond * 250
 	workDir       string
 )
@@ -321,14 +321,14 @@ func testFilesImportTheirOwnPackage(packagePath string) bool {
 	if err != nil {
 		return false
 	}
-
+	
 	testPackageID := fmt.Sprintf("%s [%s.test]", meta[0], meta[0])
-
+	
 	for _, testPackage := range meta[1:] {
 		if testPackage.ID != testPackageID {
 			continue
 		}
-
+		
 		for dependency := range testPackage.Imports {
 			if dependency == meta[0].PkgPath {
 				return true
@@ -349,7 +349,7 @@ func resolvePackageName(path string) string {
 	if err == nil {
 		return pkg[0].PkgPath
 	}
-
+	
 	nameArr := strings.Split(path, endGoPath)
 	return nameArr[len(nameArr)-1]
 }

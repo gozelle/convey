@@ -3,17 +3,17 @@ package convey
 import (
 	"flag"
 	"os"
-
+	
+	"github.com/gozelle/convey/convey/reporting"
 	"github.com/jtolds/gls"
 	"github.com/smarty/assertions"
-	"github.com/smartystreets/goconvey/convey/reporting"
 )
 
 func init() {
 	assertions.GoConveyMode(true)
-
+	
 	declareFlags()
-
+	
 	ctxMgr = gls.NewContextManager()
 }
 
@@ -21,11 +21,11 @@ func declareFlags() {
 	flag.BoolVar(&json, "convey-json", false, "When true, emits results in JSON blocks. Default: 'false'")
 	flag.BoolVar(&silent, "convey-silent", false, "When true, all output from GoConvey is suppressed.")
 	flag.BoolVar(&story, "convey-story", false, "When true, emits story output, otherwise emits dot output. When not provided, this flag mirrors the value of the '-test.v' flag")
-
+	
 	if noStoryFlagProvided() {
 		story = verboseEnabled
 	}
-
+	
 	// FYI: flag.Parse() is called from the testing package.
 }
 
@@ -35,7 +35,7 @@ func noStoryFlagProvided() bool {
 
 func buildReporter() reporting.Reporter {
 	selectReporter := os.Getenv("GOCONVEY_REPORTER")
-
+	
 	switch {
 	case testReporter != nil:
 		return testReporter
@@ -55,7 +55,7 @@ func buildReporter() reporting.Reporter {
 
 var (
 	ctxMgr *gls.ContextManager
-
+	
 	// only set by internal tests
 	testReporter reporting.Reporter
 )
@@ -64,7 +64,7 @@ var (
 	json   bool
 	silent bool
 	story  bool
-
+	
 	verboseEnabled = flagFound("-test.v=true")
 	storyDisabled  = flagFound("-story=false")
 )
